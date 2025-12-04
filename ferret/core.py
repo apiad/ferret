@@ -24,7 +24,7 @@ class Profiler:
         db_path: str | BeaverDB = ":memory:",
         buffer_size: int = 100,
         namespace: str = "_ferret_trace",
-        run_id: str = None,
+        run_id: str | None = None,
     ):
         """
         Initialize the Profiler.
