@@ -12,6 +12,7 @@ class SpanModel(BaseModel):
 
     span_id: str = Field(default_factory=lambda: uuid.uuid4().hex)
     parent_id: Optional[str] = None
+    run_id: str = Field(description="Unique identifier for the execution session")
     name: str
 
     # Timing
