@@ -5,7 +5,8 @@ import ast
 import builtins
 import importlib.util
 from importlib.abc import MetaPathFinder
-from importlib.machinery import SourceFileLoader, FileFinder
+# FIX: Import SOURCE_SUFFIXES from the module
+from importlib.machinery import SourceFileLoader, FileFinder, SOURCE_SUFFIXES
 from importlib.util import decode_source
 from rich.console import Console
 from rich.table import Table
@@ -80,7 +81,8 @@ def install_import_hook():
     """
     Installs the Ferret loader into sys.path_hooks to intercept imports.
     """
-    loader_details = (FerretSourceFileLoader, SourceFileLoader.SOURCE_SUFFIXES)
+    # FIX: Use the module-level SOURCE_SUFFIXES constant
+    loader_details = (FerretSourceFileLoader, SOURCE_SUFFIXES)
 
     def hook(path):
         # Only hook into paths inside the project directory
