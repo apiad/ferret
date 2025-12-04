@@ -1,6 +1,6 @@
 [project]
 name = "ferret-io"
-version = "0.3.0"
+version = "0.3.1"
 description = "Async-native, persistent, inter-process performance logger."
 readme = "README.md"
 authors = [
