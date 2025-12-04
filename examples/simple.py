@@ -6,6 +6,7 @@ from ferret import Profiler
 # This allows you to append to an existing trace log or start a named session.
 profiler = Profiler(db_path="ferret_explicit.db", run_id="semantic_demo_v1")
 
+
 # 2. Dynamic Naming Strategy
 # The span name will change based on the 'user_id' argument (args[0])
 @profiler.measure(lambda args: f"process_user:{args[0]}")
@@ -32,6 +33,7 @@ async def process_user_data(user_id: int):
 
     return True
 
+
 async def main():
     print("Starting Explicit Instrumentation Demo...")
 
@@ -54,6 +56,7 @@ async def main():
 
     # Always good practice to close, though atexit handles it mostly.
     profiler.close()
+
 
 if __name__ == "__main__":
     asyncio.run(main())

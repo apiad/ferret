@@ -5,6 +5,7 @@ import random
 # NOTICE: No imports from ferret!
 # This file is completely unaware it is being profiled.
 
+
 def heavy_computation(n: int):
     """
     Simulates CPU-bound synchronous work.
@@ -14,6 +15,7 @@ def heavy_computation(n: int):
         count += i * i
     return count
 
+
 async def fetch_database_item(item_id: int):
     """
     Simulates IO-bound asynchronous work (e.g., DB query).
@@ -22,6 +24,7 @@ async def fetch_database_item(item_id: int):
     latency = random.uniform(0.01, 0.05)
     await asyncio.sleep(latency)
     return f"item_{item_id}"
+
 
 async def process_batch(batch_id: int, items: list):
     """
@@ -41,6 +44,7 @@ async def process_batch(batch_id: int, items: list):
 
     return results
 
+
 async def main():
     print("Starting Workload...")
 
@@ -49,7 +53,7 @@ async def main():
     tasks = [
         process_batch(1, [101, 102, 103]),
         process_batch(2, [201, 202]),
-        process_batch(3, [301, 302, 303, 304])
+        process_batch(3, [301, 302, 303, 304]),
     ]
 
     await asyncio.gather(*tasks)
@@ -59,6 +63,7 @@ async def main():
     heavy_computation(100_000)
 
     print("Done!")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

@@ -5,6 +5,7 @@ import ast
 import builtins
 import importlib.util
 from importlib.abc import MetaPathFinder
+
 # FIX: Import SOURCE_SUFFIXES from the module
 from importlib.machinery import SourceFileLoader, FileFinder, SOURCE_SUFFIXES
 from importlib.util import decode_source
@@ -23,11 +24,13 @@ console = Console()
 
 # --- Instrumentation Logic ---
 
+
 class FerretInstrumentor(ast.NodeTransformer):
     """
     AST Transformer that automagically injects the @_ferret_profiler.measure decorator
     into every synchronous and asynchronous function definition.
     """
+
     def visit_FunctionDef(self, node):
         return self._inject_decorator(node)
 
@@ -39,22 +42,24 @@ class FerretInstrumentor(ast.NodeTransformer):
         # We assume '_ferret_profiler' is available in builtins.
         decorator = ast.Call(
             func=ast.Attribute(
-                value=ast.Name(id='_ferret_profiler', ctx=ast.Load()),
-                attr='measure',
-                ctx=ast.Load()
+                value=ast.Name(id="_ferret_profiler", ctx=ast.Load()),
+                attr="measure",
+                ctx=ast.Load(),
             ),
             args=[ast.Constant(value=node.name)],
-            keywords=[]
+            keywords=[],
         )
 
         # Insert as the first decorator
         node.decorator_list.insert(0, decorator)
         return self.generic_visit(node)
 
+
 class FerretSourceFileLoader(SourceFileLoader):
     """
     Custom Loader that instruments code on-the-fly during import.
     """
+
     def get_code(self, fullname):
         filename = self.get_filename(fullname)
 
@@ -70,12 +75,15 @@ class FerretSourceFileLoader(SourceFileLoader):
                 tree = ast.parse(source, filename)
                 tree = FerretInstrumentor().visit(tree)
                 ast.fix_missing_locations(tree)
-                return compile(tree, filename, 'exec')
+                return compile(tree, filename, "exec")
             except Exception as e:
-                console.print(f"[yellow]Warning: Failed to instrument {filename}: {e}[/yellow]")
+                console.print(
+                    f"[yellow]Warning: Failed to instrument {filename}: {e}[/yellow]"
+                )
 
         # Fallback to standard loading for libraries/external files
         return super().get_code(fullname)
+
 
 def install_import_hook():
     """
@@ -87,14 +95,16 @@ def install_import_hook():
     def hook(path):
         # Only hook into paths inside the project directory
         if os.getcwd() not in os.path.abspath(path):
-             raise ImportError
+            raise ImportError
         return FileFinder(path, loader_details)
 
     sys.path_hooks.insert(0, hook)
     # Clear cache to ensure our hook is used for subsequent imports
     sys.path_importer_cache.clear()
 
+
 # --- CLI Commands ---
+
 
 @app.command(
     context_settings={"allow_extra_args": True, "ignore_unknown_options": True}
@@ -102,14 +112,16 @@ def install_import_hook():
 def run(
     ctx: typer.Context,
     script: str = typer.Argument(..., help="Path to the Python script to run"),
-    db_path: str = typer.Option("ferret.db", "--db", help="Path to store the trace database"),
+    db_path: str = typer.Option(
+        "ferret.db", "--db", help="Path to store the trace database"
+    ),
 ):
     """
     Run a Python script with automatic Ferret instrumentation.
     This injects decorators into functions in the script and local imports.
     """
     # 1. Initialize Profiler
-    profiler = Profiler(db_path, run_id=None) # Generates a new UUID
+    profiler = Profiler(db_path, run_id=None)  # Generates a new UUID
 
     # Inject into builtins so the AST-injected code can find it without imports
     builtins._ferret_profiler = profiler
@@ -124,7 +136,9 @@ def run(
     if script_dir not in sys.path:
         sys.path.insert(0, script_dir)
 
-    console.print(f"[bold green]Ferreting[/bold green] {script} (Run ID: {profiler.run_id})...")
+    console.print(
+        f"[bold green]Ferreting[/bold green] {script} (Run ID: {profiler.run_id})..."
+    )
 
     # 4. Instrument and Execute Main Script
     try:
@@ -152,13 +166,16 @@ def run(
         profiler.close()
         console.print(f"Trace saved to [bold]{db_path}[/bold]")
 
+
 # --- Existing Analysis Commands ---
+
 
 def get_latest_run_id(report: Report) -> str | None:
     entries = [d[1] for d in report.log_manager]
     if not entries:
         return None
     return entries[-1].run_id
+
 
 def print_table(stats: List[AggregatedStats], limit: int):
     table = Table(title="Performance Summary", box=box.SIMPLE, show_header=True)
@@ -180,9 +197,10 @@ def print_table(stats: List[AggregatedStats], limit: int):
             f"{stat.avg_duration * 1000:.2f}ms",
             f"{stat.min_duration * 1000:.2f}ms",
             f"{stat.max_duration * 1000:.2f}ms",
-            f"{stat.error_rate * 100:.1f}%"
+            f"{stat.error_rate * 100:.1f}%",
         )
     console.print(table)
+
 
 def build_rich_tree(node: TraceNode, tree: Tree):
     duration_ms = (node.span.duration or 0) * 1000
@@ -204,11 +222,16 @@ def build_rich_tree(node: TraceNode, tree: Tree):
     for child in node.children:
         build_rich_tree(child, branch)
 
+
 @app.command()
 def analyze(
     db_path: str = typer.Argument(..., help="Path to the BeaverDB file"),
-    tree: bool = typer.Option(False, "--tree", "-t", help="Show hierarchical tree view instead of table"),
-    run_id: Optional[str] = typer.Option(None, "--run", "-r", help="Filter by specific Run ID. Defaults to latest."),
+    tree: bool = typer.Option(
+        False, "--tree", "-t", help="Show hierarchical tree view instead of table"
+    ),
+    run_id: Optional[str] = typer.Option(
+        None, "--run", "-r", help="Filter by specific Run ID. Defaults to latest."
+    ),
     limit: int = typer.Option(20, "--limit", "-l", help="Limit output rows/trees"),
 ):
     """
@@ -247,6 +270,7 @@ def analyze(
             stats_list = list(stats_dict.values())
         print_table(stats_list, limit)
     report.close()
+
 
 if __name__ == "__main__":
     app()
