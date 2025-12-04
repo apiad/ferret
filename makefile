@@ -23,7 +23,7 @@ type-check:
 .PHONY: test-unit test-all
 
 test-unit: format-check
-	pytest tests/unit --cov=ferret
+	pytest tests --cov=ferret
 
 test-all: format-check
 	pytest --cov=ferret

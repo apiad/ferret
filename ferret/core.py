@@ -1,4 +1,5 @@
 import asyncio
+import datetime
 import time
 import functools
 import inspect
@@ -106,10 +107,11 @@ class Profiler:
 
         # Write to DB (BeaverDB handles the transaction/locking)
         try:
-            with self.log_manager.batched() as batch:
-                for span in pending:
-                    # We use the span's start_time as the log timestamp
-                    batch.log(span, timestamp=span.start_time)
+            for span in pending:
+                # We use the span's start_time as the log timestamp
+                self.log_manager.log(
+                    span, datetime.datetime.fromtimestamp(timestamp=span.start_time)
+                )
         except Exception as e:
             # Fallback: print error, maybe retry?
             # For a profiler, dropping data is better than crashing app.
