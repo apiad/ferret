@@ -3,10 +3,12 @@ from pydantic import BaseModel, Field
 import uuid
 import time
 
+
 class SpanModel(BaseModel):
     """
     Represents a single unit of work (trace) in the system.
     """
+
     span_id: str = Field(default_factory=lambda: uuid.uuid4().hex)
     parent_id: Optional[str] = None
     name: str

@@ -24,7 +24,7 @@ class Profiler:
         db_path: str | BeaverDB = ":memory:",
         buffer_size: int = 100,
         namespace: str = "_ferret_trace",
-        run_id: str = None
+        run_id: str = None,
     ):
         """
         Initialize the Profiler.
@@ -53,7 +53,9 @@ class Profiler:
         # Ensure we flush on exit
         atexit.register(self.flush)
 
-    def measure(self, name: str | Callable[..., str], tags: dict = None) -> "SpanContext":
+    def measure(
+        self, name: str | Callable[..., str], tags: dict = None
+    ) -> "SpanContext":
         """
         The main entry point. Returns a context manager that can also be used as a decorator.
         """
@@ -72,7 +74,7 @@ class Profiler:
             name=name,
             parent_id=parent_id,
             initial_tags=tags,
-            run_id=self.run_id
+            run_id=self.run_id,
         )
 
         # We do NOT set the contextvar here because manual start/stop
@@ -123,13 +125,18 @@ class Span:
     """
     The actual object holding trace data.
     """
-    def __init__(self, profiler: Profiler, name: str, parent_id: str | None, initial_tags: dict | None, run_id: str):
+
+    def __init__(
+        self,
+        profiler: Profiler,
+        name: str,
+        parent_id: str | None,
+        initial_tags: dict | None,
+        run_id: str,
+    ):
         self.profiler = profiler
         self.model = SpanModel(
-            name=name,
-            parent_id=parent_id,
-            tags=initial_tags or {},
-            run_id=run_id
+            name=name, parent_id=parent_id, tags=initial_tags or {}, run_id=run_id
         )
 
     def annotate(self, **kwargs):
@@ -149,11 +156,9 @@ class SpanContext:
     2. Async Context Manager
     3. Decorator (Sync & Async)
     """
+
     def __init__(
-        self,
-        profiler: Profiler,
-        name: str | Callable[..., str],
-        tags: dict = None
+        self, profiler: Profiler, name: str | Callable[..., str], tags: dict = None
     ):
         self.profiler = profiler
         self._name_or_func = name
@@ -176,7 +181,9 @@ class SpanContext:
         name = self._get_name()
         parent_id = _current_span_ctx.get()
 
-        self.span = Span(self.profiler, name, parent_id, self.tags, self.profiler.run_id)
+        self.span = Span(
+            self.profiler, name, parent_id, self.tags, self.profiler.run_id
+        )
 
         # Set Context
         self.token = _current_span_ctx.set(self.span.model.span_id)
@@ -207,6 +214,7 @@ class SpanContext:
 
     def __call__(self, func):
         if inspect.iscoroutinefunction(func):
+
             @functools.wraps(func)
             async def async_wrapper(*args, **kwargs):
                 # Resolve dynamic name using runtime args
@@ -221,8 +229,10 @@ class SpanContext:
                 ctx = SpanContext(self.profiler, self._resolved_name, self.tags)
                 async with ctx:
                     return await func(*args, **kwargs)
+
             return async_wrapper
         else:
+
             @functools.wraps(func)
             def sync_wrapper(*args, **kwargs):
                 if callable(self._name_or_func):
@@ -233,4 +243,5 @@ class SpanContext:
                 ctx = SpanContext(self.profiler, self._resolved_name, self.tags)
                 with ctx:
                     return func(*args, **kwargs)
+
             return sync_wrapper
