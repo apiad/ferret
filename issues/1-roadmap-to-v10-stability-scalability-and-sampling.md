@@ -1,11 +1,13 @@
 ---
 number: 1
 title: "🚀 Roadmap to v1.0: Stability, Scalability, and Sampling"
+state: open
+labels:
 ---
 
 **Description:**
-
 This tracking issue consolidates the architectural improvements required to move Ferret from v0.1.0 to a production-ready v1.0. The primary goals are to remove fragile instrumentation logic, ensure non-blocking writes to BeaverDB, and support large-scale analysis via streaming.
+
 
 ### 1. Stability: Remove "Magical" Builtins Injection
 
@@ -45,11 +47,12 @@ This tracking issue consolidates the architectural improvements required to move
 - [ ] **New Command**: Add `ferret export --format speedscope` to the CLI.
 - [ ] **Transformer**: Implement a conversion from `TraceNode` structures to the JSON format required by [speedscope.app](https://www.speedscope.app/).
 
-### 5. Cost Control: Probabilistic Sampling
+### 5. Cost Control: Adaptive Rate Limiting
 
 **Priority:** Medium
 
-**Context:** Logging every span is expensive in production.
+**Context:** Fixed probabilistic sampling is difficult to tune manually. A burst of activity might still overwhelm the storage, while quiet periods might be under-sampled.
 
-- [ ] **Config**: Add `sample_rate` (float 0.0-1.0) to `Profiler` init.
-- [ ] **Logic**: In `start`/`measure`, implement a random check. If the check fails, return a `NoOpSpan` that bypasses the recording queue entirely.
+- [ ] **Config**: Add `max_spans_per_second` (default: 1000) to `Profiler` init.
+- [ ] **Token Bucket Algorithm**: Implement a lightweight token bucket or sliding window counter in `Profiler`.
+- [ ] **Automatic Throttling**: If the rate limit is exceeded, `start`/`measure` should automatically return a `NoOpSpan` until the rate stabilizes, ensuring the logging overhead never exceeds a set budget regardless of traffic.
