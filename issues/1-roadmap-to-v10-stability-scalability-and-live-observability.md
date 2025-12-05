@@ -1,6 +1,8 @@
 ---
 number: 1
 title: "🚀 Roadmap to v1.0: Stability, Scalability, and Live Observability"
+state: open
+labels:
 ---
 
 **Description:**
@@ -9,21 +11,21 @@ This tracking issue consolidates the architectural improvements required to move
 
 ### Core Architecture & Stability
 
-* **Issue #2:** [Stability] Refactor Instrumentation to Remove "Magical" Builtins Injection
-* **Issue #3:** [Performance] Implement Non-Blocking Write Buffer with Background Worker
-* **Issue #6:** [Cost Control] Implement Adaptive Rate Limiting (Throughput-Based Sampling)
+* **Issue #2:** Replace fragile `builtins` injection with a robust singleton accessor pattern.
+* **Issue #3:** Move BeaverDB writes to a background thread to prevent blocking the application loop.
+* **Issue #6:** Implement throughput-based adaptive rate limiting to control overhead.
 
 ### Analysis & Visualization
 
-* **Issue #4:** [Scalability] Implement Streaming Analysis to Prevent OOM on Large Datasets
-* **Issue #5:** [Usability] Implement Flame Graph Export (Speedscope Support)
+* **Issue #4:** Refactor reporting to use streaming iterators to handle large datasets without OOM.
+* **Issue #5:** Export traces to Speedscope JSON format for flame graph visualization.
 
-### Live Observability (The "Watch" Command)
+### Live Observability
 
-* **Issue #8:** [Observability] Implement Live Monitoring System (`ferret watch`)
-* **Issue #9:** [Reliability] Deadlock & Stall Detection (The Watchdog)
-* **Issue #10:** [Observability] Capture Thread and Process Context in Spans
+* **Issue #8:** Create `ferret watch` TUI for real-time monitoring of active spans and metrics.
+* **Issue #9:** Add watchdog to detect and report stalled spans or deadlocks.
+* **Issue #10:** Capture PID and Thread ID in spans to visualize concurrency.
 
 ### Developer Experience
 
-* **Issue #7:** [Usability] Enable Profiling of Installed Modules via CLI (`-m` flag)
+* **Issue #7:** Support `ferret run -m <module>` to profile installed CLI tools easily.
